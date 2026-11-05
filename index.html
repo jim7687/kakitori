@@ -1,6 +1,10 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f1f3f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1119" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Kakitori – kanji handwriting practice</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600&display=swap">
 <style>
@@ -59,7 +63,7 @@ html.nos,html.nos body{overflow:hidden;overscroll-behavior:none;height:100%}
 .mrow{flex:none;height:44px;display:flex;align-items:center;gap:8px}.mrow .msg{flex:1;min-height:0;padding:0;font-size:13px;line-height:1.25;max-height:44px;overflow:hidden}.mrow button{flex:none}
 .fit .bar{flex:none;margin:0;gap:6px}.fit .bar button{min-height:38px;padding:6px 8px;font-size:14px;flex:1 1 auto}
 .fit .panel{padding:8px 10px;margin:0;font-size:14px}.fit .panel p{margin:2px 0}.fit .panel .big{font-size:40px}
-.fit>.panel:not(.ov){flex:none;max-height:34%;overflow:auto}
+.fit>.panel:not(.ov){flex:none;height:32%;overflow:auto}
 .panel.ov{position:absolute;left:0;right:0;bottom:92px;z-index:5;max-height:55%;overflow:auto;box-shadow:0 8px 24px rgba(0,0,0,.3)}
 .fit.q .card{padding:12px}.fit.q .card .big{font-size:64px}.fit.q .choice{min-height:50px}.fit.q .choices{margin:6px 0}
 @media (prefers-reduced-motion:reduce){.stage{animation:none}}
@@ -152,7 +156,7 @@ function attempt(ST){
  let tok=0;const play=async()=>{const me=++tok;anim.replaceChildren();for(const r of R){if(me!==tok)return;const p=s('path',{d:r.d,pathLength:1});p.style.strokeDasharray=1;anim.append(p);await p.animate([{strokeDashoffset:1},{strokeDashoffset:0}],{duration:Math.min(700,250+r.L*7),fill:'forwards'}).finished.catch(()=>{})}await sleep(800);if(me===tok)anim.replaceChildren()};
  nextBtn.onclick=()=>{ST.att=(ST.att||0)+1;const q=ST.per[ch]??=[0,0];q[0]++;if(A.fails.size){q[1]++;ST.fails++;ST.queue.push(ch)}ST.i++;ST.i>=ST.queue.length?finish(ST):attempt(ST)};
  const info=h('div',{class:'panel'+(rec?'':' ov')});
- const renderInfo=reveal=>{const mk=w=>reveal?w:w.split(ch).join('○');info.replaceChildren(...[reveal&&h('div',{class:'big'},ch),h('p',{},h('b',{},d[1].join(', '))),h('p',{class:'note'},'On’yomi: '+(d[2].join('、')||'–')),h('p',{class:'note'},'Kun’yomi: '+(d[3].join('、')||'–')),h('p',{class:'note'},'Strokes: '+d[4]),d[5]&&d[5].length?h('div',{},h('p',{class:'note'},'Example words'),h('ul',{},d[5].map(w=>h('li',{class:'note'},h('b',{},mk(w[0])),' '+w[1]+' – '+w[2])))):h('p',{class:'note'},'No common example words found for this kanji.')].filter(Boolean))};
+ const renderInfo=reveal=>{const mk=w=>reveal?w:w.split(ch).join('○');info.replaceChildren(...[(reveal||rec)&&h('div',{class:'big',style:rec?'float:right;margin-left:8px':''},reveal?ch:'？'),h('p',{},h('b',{},d[1].join(', '))),h('p',{class:'note'},'On’yomi: '+(d[2].join('、')||'–')),h('p',{class:'note'},'Kun’yomi: '+(d[3].join('、')||'–')),h('p',{class:'note'},'Strokes: '+d[4]),d[5]&&d[5].length?h('div',{},h('p',{class:'note'},'Example words'),h('ul',{},d[5].map(w=>h('li',{class:'note'},h('b',{},mk(w[0])),' '+w[1]+' – '+w[2])))):h('p',{class:'note'},'No common example words found for this kanji.')].filter(Boolean))};
  renderInfo(!rec);info.hidden=!!(!rec);
  const set=h('div',{class:'panel ov'},
   !rec&&h('label',{},h('input',{type:'checkbox',checked:S.cfg.tpl?'':null,onchange:e=>{S.cfg.tpl=e.target.checked;save();cfgApply()}}),'Show template and numbers'),
