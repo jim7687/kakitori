@@ -1,12 +1,27 @@
 /* Kakitori service worker: makes the app work offline.
    Bump VER together with VER in index.html on every release. */
-const VER = '1.3.4';
+const VER = '1.3.5';
 const CACHE = 'kakitori-v' + VER;
 const abs = (p) => new URL(p, self.registration.scope).href;
 const INDEX = abs('index.html');
 const CORE = [INDEX, abs('manifest.webmanifest')];   // must exist, or install fails
 const OPTIONAL = ['icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png'].map(abs);   // skipped if missing
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
+// Must match the stylesheet link in index.html exactly.
+const FONT_CSS = 'https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap';
+const FONT_SUBSETS = ['latin', 'latin-ext'];   // saved at install; Japanese glyph files are saved as they are used
+
+// Saves the Google Fonts stylesheet and its Latin font files so the first offline launch looks right.
+async function saveFonts(c) {
+  const res = await fetch(FONT_CSS);
+  if (!res.ok) return;
+  const css = await res.clone().text();
+  await c.put(FONT_CSS, res);
+  const re = /\/\*\s*([\w-]+)\s*\*\/\s*@font-face\s*\{[^}]*?src:\s*url\(([^)]+)\)/g;
+  const files = [];
+  for (let m; (m = re.exec(css));) if (FONT_SUBSETS.includes(m[1])) files.push(m[2].replace(/['"]/g, ''));
+  await Promise.all(files.map((u) => fetch(u).then((r) => { if (r.ok) return c.put(u, r); }).catch(() => {})));
+}
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
@@ -14,6 +29,7 @@ self.addEventListener('install', (e) => {
       .then(async (c) => {
         await c.addAll(CORE.map((u) => new Request(u, { cache: 'reload' })));
         await Promise.all(OPTIONAL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => {})));
+        await saveFonts(c).catch(() => {});   // fonts are a bonus: never fail the install
       })
       .then(() => self.skipWaiting())
   );
